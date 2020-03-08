@@ -9,12 +9,11 @@ import (
 	"strings"
 	"errors"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/joho/godotenv"
-
-	"ayls/blockchain-dns-server/registrar-client/dnsrecord"
+	
+	"ayls/blockchain-dns-server/blockchain-contract"
+	"ayls/blockchain-dns-server/blockchain-contract/dnsrecord"	
 )
 
 var myenv map[string]string
@@ -113,82 +112,25 @@ func main() {
 
 //// Contract initialization functions
 
-// NewContract deploys a contract if no existing contract exists
 func NewContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) dnsrecord.DnsrecordSession {
-	loadEnv()
-
-	// Test our inputs
 	if myenv["CONTRACTADDR"] != "" {
 		return session
 	}
 
-	// Hash answer before sending it over Ethereum network.
-	contractAddress, tx, instance, err := dnsrecord.DeployDnsrecord(&session.TransactOpts, client)
-	if err != nil {
-		log.Fatalf("could not deploy contract: %v\n", err)
-	}
-	fmt.Printf("Contract deployed! Wait for tx %s to be confirmed.\n", tx.Hash().Hex())
-
-	session.Contract = instance
-	updateEnvFile("CONTRACTADDR", contractAddress.Hex())
+	session, contractAddress := contract.NewContract(session, client)	
+	updateEnvFile("CONTRACTADDR", contractAddress)
 	return session
 }
 
 // LoadContract loads a contract if one exists
 func LoadContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) dnsrecord.DnsrecordSession {
-	loadEnv()
-
-	if myenv["CONTRACTADDR"] == "" {
-		log.Println("could not find a contract address to load")
-		return session
-	}
-	addr := common.HexToAddress(myenv["CONTRACTADDR"])
-	instance, err := dnsrecord.NewDnsrecord(addr, client)
-	if err != nil {
-		log.Fatalf("could not load contract: %v\n", err)
-		log.Println(ErrTransactionWait)
-	}
-	session.Contract = instance
-	return session
+	return contract.LoadContract(session, client, myenv["CONTRACTADDR"])
 }
 
-// NewSession returns a quiz.QuizSession struct that
+// NewSession returns a dnsrecord.DnsrecordSession struct that
 // contains an authentication key to sign transactions with.
 func NewSession(ctx context.Context) (session dnsrecord.DnsrecordSession) {
-	loadEnv()
-
-	// Create new transactor
-	keystore, err := os.Open(myenv["KEYSTORE"])
-	if err != nil {
-		log.Printf(
-			"could not load keystore from location %s: %v\n",
-			myenv["KEYSTORE"],
-			err,
-		)
-	}
-	defer keystore.Close()
-
-	auth, err := bind.NewTransactor(keystore, myenv["KEYSTOREPASS"])
-	if err != nil {
-		log.Printf("%s\n", err)
-	}
-
-	// bind.NewTransactor() returns a bind.TransactOpts{} struct with the following field values:
-	// From: auth.From,
-	// Signer: auth.Signer,
-	// Nonce: nil // Setting to nil uses nonce of pending state
-	// Value: big.NewInt(0), // 0 because we're not transferring Eth
-	// GasPrice: nil // Setting to nil automatically suggests a gas price
-	// GasLimit: 0 // Setting to 0 automatically estimates gas limit
-
-	// Return session without contract instance
-	return dnsrecord.DnsrecordSession{
-		TransactOpts: *auth,
-		CallOpts: bind.CallOpts{
-			From:    auth.From,
-			Context: ctx,
-		},
-	}
+	return contract.NewSession(ctx, myenv["KEYSTORE"], myenv["KEYSTOREPASS"])
 }
 
 //// Contract interaction functions
@@ -238,7 +180,7 @@ func showRecord(session dnsrecord.DnsrecordSession, recType int8, recName string
 		log.Println(ErrTransactionWait)
 		return
 	}
-	fmt.Printf("Ip: %s\n", ip)
+	fmt.Printf("Value: %s\n", ip)
 	return
 }
 
