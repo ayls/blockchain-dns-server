@@ -55,9 +55,9 @@ func (s *DNSService) Listen() {
 		if len(m.Questions) == 0 {
 			continue
 		}
-		s.Query(Packet{*addr, m})
+		s.logger.Println("Got query")		
+		go s.Query(Packet{*addr, m})
 	}
-
 }
 
 // Query lookup answers for DNS message.

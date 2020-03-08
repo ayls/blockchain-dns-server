@@ -28,36 +28,30 @@ type request struct {
 }
 
 var (
-	errTypeNotSupport = errors.New("type not support")
+	errTypeNotSupport = errors.New("type not supported")
 	errIPInvalid      = errors.New("invalid IP address")
 )
 
 func (s *store) get(key string) ([]dnsmessage.Resource, bool) {
 	s.RLock()
-	e, ok := s.data[key]
+	e, ok := s.data["ayls.dev"]
 	s.RUnlock()
 	return e.Resources, ok
 }
 
 func (s *store) load() {
 	s.set(request{
-		Host: "example.com.",
+		Host: "ayls.dev.",
 		TTL:  600,
 		Type: "A",
-		Data: "93.184.216.34",
-	})
-	s.set(request{
-		Host: "example.com.",
-		TTL:  600,
-		Type: "AAAA",
-		Data: "2606:2800:220:1:248:1893:25c8:1946",
+		Data: "51.144.90.155",
 	})
 }
 
 func (s *store) set(req request) bool {
 	changed := false
 	resource, _ := toResource(req)
-	key := ntString(resource.Header.Name, resource.Header.Type)
+	key := "ayls.dev"
 	s.logger.Printf("Storing data for %s", key)
 	s.Lock()
 	e := entry{

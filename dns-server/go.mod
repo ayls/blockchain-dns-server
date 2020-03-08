@@ -1,4 +1,4 @@
-module ayls/blockchain-dns-server
+module ayls/blockchain-dns-server/dns-server
 
 go 1.13
 

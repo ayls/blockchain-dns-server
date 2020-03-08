@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ayls/blockchain-dns-server/dns"
+	"ayls/blockchain-dns-server/dns-server/dns"
 	"fmt"
 	"github.com/natefinch/lumberjack"
 	"log"
@@ -25,5 +25,5 @@ func main() {
 		MaxAge:     28, //days
 	})
 
-	dns.Start(logger)
+	logger.Fatal(dns.Start(logger))
 }

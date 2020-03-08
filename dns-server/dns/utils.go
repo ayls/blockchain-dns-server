@@ -47,15 +47,6 @@ func toResource(req request) (dnsmessage.Resource, error) {
 			return none, errIPInvalid
 		}
 		rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
-	case "AAAA":
-		rType = dnsmessage.TypeAAAA
-		ip := net.ParseIP(req.Data)
-		if ip == nil {
-			return none, errIPInvalid
-		}
-		var ipV6 [16]byte
-		copy(ipV6[:], ip)
-		rBody = &dnsmessage.AAAAResource{AAAA: ipV6}
 	default:
 		return none, errTypeNotSupport
 	}
