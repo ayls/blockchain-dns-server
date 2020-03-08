@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"errors"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -73,10 +74,28 @@ func main() {
 		// from STDIN and switches to case.
 		switch readStringStdin() {
 		case "1":
-			setRecord(session)
+			fmt.Println("Type in the record type")
+			recType, err := parseRecordType(readStringStdin())
+			if err == nil {
+				fmt.Println("Type in the record name")
+				recName := readStringStdin()
+				fmt.Println("Type in the record value")
+				recValue := readStringStdin()
+				setRecord(session, recType, recName, recValue)
+			} else {
+				log.Printf("%v\n", err)
+			}
 			break
 		case "2":
-			showRecord(session)
+			fmt.Println("Type in the record type")
+			recType, err := parseRecordType(readStringStdin())
+			if err == nil {
+				fmt.Println("Type in the record name")
+				recName := readStringStdin()
+				showRecord(session, recType, recName)
+			} else {
+				log.Printf("%v\n", err)
+			}			
 			break
 		case "3":
 			fmt.Println("Bye!")
@@ -174,10 +193,35 @@ func NewSession(ctx context.Context) (session dnsrecord.DnsrecordSession) {
 
 //// Contract interaction functions
 
+func parseRecordType(recTypeString string) (int8, error) {
+	switch recTypeString {
+	case "A":		
+		return 1, nil
+	case "NS":
+		return 2, nil
+	case "CNAME":
+		return 5, nil
+	case "SOA":
+		return 6, nil
+	case "PTR":
+		return 12, nil
+	case "MX":
+		return 15, nil
+	case "TXT":
+		return 16, nil
+	case "AAAA":
+		return 28, nil
+	case "SRV":
+		return 33, nil
+	default:
+		return 0, errors.New("Unknown record type")		
+	}
+}
+
 // setRecord sets a test record
-func setRecord(session dnsrecord.DnsrecordSession) {
+func setRecord(session dnsrecord.DnsrecordSession, recType int8, recName string, recValue string) {
 	// Send answer
-	txSendAnswer, err := session.AddRecord("example.com", "93.184.216.34")
+	txSendAnswer, err := session.AddRecord(recName, recType, recValue)
 	if err != nil {
 		log.Printf("could not set record in contract: %v\n", err)
 		return
@@ -187,8 +231,8 @@ func setRecord(session dnsrecord.DnsrecordSession) {
 }
 
 // showRecord prints out the set record.
-func showRecord(session dnsrecord.DnsrecordSession) {
-	ip, err := session.GetRecord("example.com")
+func showRecord(session dnsrecord.DnsrecordSession, recType int8, recName string) {
+	ip, err := session.GetRecord(recName, recType)
 	if err != nil {
 		log.Printf("could not read record from contract: %v\n", err)
 		log.Println(ErrTransactionWait)
