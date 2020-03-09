@@ -19,17 +19,22 @@ import (
 var myenv map[string]string
 
 const (
-	envLoc = ".env" // Define location of env file to load here.
-	// ErrTransactionWait should be returned/printed when we encounter an error that may be a result of the transaction not being confirmed yet.
+	envLoc = ".env"
 	ErrTransactionWait = "if you've just started the application, wait a while for the network to confirm your transaction."
 )
 
-// loadEnv loads environment variables from location envLoc
-// Call this at the top of every function that uses environment variables.
 func loadEnv() {
 	var err error
 	if myenv, err = godotenv.Read(envLoc); err != nil {
 		log.Printf("could not load env from %s: %v", envLoc, err)
+	}
+}
+
+func updateEnvFile(k string, val string) {
+	myenv[k] = val
+	err := godotenv.Write(myenv, envLoc)
+	if err != nil {
+		log.Printf("failed to update %s: %v\n", envLoc, err)
 	}
 }
 
@@ -69,8 +74,7 @@ func main() {
 				"4. Reset and exit.\n",
 		)
 
-		// Reads a single UTF-8 character (rune)
-		// from STDIN and switches to case.
+		// Read selection
 		switch readStringStdin() {
 		case "1":
 			fmt.Println("Type in the record type")
@@ -110,7 +114,9 @@ func main() {
 	}
 }
 
-//// Contract initialization functions
+func NewSession(ctx context.Context) (session dnsrecord.DnsrecordSession) {
+	return contract.NewSession(ctx, myenv["KEYSTORE"], myenv["KEYSTOREPASS"])
+}
 
 func NewContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) dnsrecord.DnsrecordSession {
 	if myenv["CONTRACTADDR"] != "" {
@@ -122,19 +128,24 @@ func NewContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) d
 	return session
 }
 
-// LoadContract loads a contract if one exists
 func LoadContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) dnsrecord.DnsrecordSession {
 	return contract.LoadContract(session, client, myenv["CONTRACTADDR"])
 }
 
-// NewSession returns a dnsrecord.DnsrecordSession struct that
-// contains an authentication key to sign transactions with.
-func NewSession(ctx context.Context) (session dnsrecord.DnsrecordSession) {
-	return contract.NewSession(ctx, myenv["KEYSTORE"], myenv["KEYSTOREPASS"])
+// readStringStdin reads a string from STDIN and strips any trailing \n characters from it.
+func readStringStdin() string {
+	reader := bufio.NewReader(os.Stdin)
+	inputVal, err := reader.ReadString('\n')
+	if err != nil {
+		log.Printf("invalid option: %v\n", err)
+		return ""
+	}
+
+	output := strings.TrimSuffix(inputVal, "\n") // Important!
+	return output
 }
 
-//// Contract interaction functions
-
+// parse record type input
 func parseRecordType(recTypeString string) (int8, error) {
 	switch recTypeString {
 	case "A":		
@@ -160,7 +171,7 @@ func parseRecordType(recTypeString string) (int8, error) {
 	}
 }
 
-// setRecord sets a test record
+// setRecord sets a dns record
 func setRecord(session dnsrecord.DnsrecordSession, recType int8, recName string, recValue string) {
 	// Send answer
 	txSendAnswer, err := session.AddRecord(recName, recType, recValue)
@@ -172,7 +183,7 @@ func setRecord(session dnsrecord.DnsrecordSession, recType int8, recName string,
 	return
 }
 
-// showRecord prints out the set record.
+// showRecord prints out a record.
 func showRecord(session dnsrecord.DnsrecordSession, recType int8, recName string) {
 	ip, err := session.GetRecord(recName, recType)
 	if err != nil {
@@ -182,28 +193,4 @@ func showRecord(session dnsrecord.DnsrecordSession, recType int8, recName string
 	}
 	fmt.Printf("Value: %s\n", ip)
 	return
-}
-
-//// Utility functions
-
-// updateEnvFile saves the contract address to our .env file
-func updateEnvFile(k string, val string) {
-	myenv[k] = val
-	err := godotenv.Write(myenv, envLoc)
-	if err != nil {
-		log.Printf("failed to update %s: %v\n", envLoc, err)
-	}
-}
-
-// readStringStdin reads a string from STDIN and strips any trailing \n characters from it.
-func readStringStdin() string {
-	reader := bufio.NewReader(os.Stdin)
-	inputVal, err := reader.ReadString('\n')
-	if err != nil {
-		log.Printf("invalid option: %v\n", err)
-		return ""
-	}
-
-	output := strings.TrimSuffix(inputVal, "\n") // Important!
-	return output
 }

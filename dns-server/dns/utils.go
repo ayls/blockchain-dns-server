@@ -1,36 +1,29 @@
 package dns
 
 import (
-	"golang.org/x/net/dns/dnsmessage"
 	"net"
+	"errors"
+
+	"golang.org/x/net/dns/dnsmessage"
 )
 
 // question to string
 func qString(q dnsmessage.Question) string {
-	b := make([]byte, q.Name.Length+2)
+	b := make([]byte, q.Name.Length)
 	for i := 0; i < int(q.Name.Length); i++ {
 		b[i] = q.Name.Data[i]
 	}
-	b[q.Name.Length] = uint8(q.Type >> 8)
-	b[q.Name.Length+1] = uint8(q.Type)
 
 	return string(b)
 }
 
-// resource name and type to string
-func ntString(rName dnsmessage.Name, rType dnsmessage.Type) string {
-	b := make([]byte, rName.Length+2)
-	for i := 0; i < int(rName.Length); i++ {
-		b[i] = rName.Data[i]
-	}
-	b[rName.Length] = uint8(rType >> 8)
-	b[rName.Length+1] = uint8(rType)
+var (
+	errTypeNotSupported = errors.New("type not supported")
+	errIPInvalid      = errors.New("invalid IP address")
+)
 
-	return string(b)
-}
-
-func toResource(req request) (dnsmessage.Resource, error) {
-	rName, err := dnsmessage.NewName(req.Host)
+func toResource(recType int8, recName string, recValue string) (dnsmessage.Resource, error) {
+	rName, err := dnsmessage.NewName(recName)
 	none := dnsmessage.Resource{}
 	if err != nil {
 		return none, err
@@ -39,16 +32,16 @@ func toResource(req request) (dnsmessage.Resource, error) {
 	var rType dnsmessage.Type
 	var rBody dnsmessage.ResourceBody
 
-	switch req.Type {
-	case "A":
+	switch dnsmessage.Type(recType) {
+	case dnsmessage.TypeA:
 		rType = dnsmessage.TypeA
-		ip := net.ParseIP(req.Data)
+		ip := net.ParseIP(recValue)
 		if ip == nil {
 			return none, errIPInvalid
 		}
 		rBody = &dnsmessage.AResource{A: [4]byte{ip[12], ip[13], ip[14], ip[15]}}
 	default:
-		return none, errTypeNotSupport
+		return none, errTypeNotSupported
 	}
 
 	return dnsmessage.Resource{
@@ -56,7 +49,7 @@ func toResource(req request) (dnsmessage.Resource, error) {
 			Name:  rName,
 			Type:  rType,
 			Class: dnsmessage.ClassINET,
-			TTL:   req.TTL,
+			TTL:   0,
 		},
 		Body: rBody,
 	}, nil

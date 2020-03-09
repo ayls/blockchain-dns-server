@@ -15,7 +15,7 @@ type DNSServer interface {
 // DNSService is an implementation of DNSServer interface.
 type DNSService struct {
 	conn   *net.UDPConn
-	book   store
+	dnslookup   store
 	logger *log.Logger
 }
 
@@ -55,28 +55,27 @@ func (s *DNSService) Listen() {
 		if len(m.Questions) == 0 {
 			continue
 		}
-		s.logger.Println("Got query")		
-		go s.Query(Packet{*addr, m})
+		go s.query(Packet{*addr, m})
 	}
 }
 
 // Query lookup answers for DNS message.
-func (s *DNSService) Query(p Packet) {
+func (s *DNSService) query(p Packet) {
 
 	// was checked before entering this routine
 	q := p.message.Questions[0]
 
 	// answer the question
-	key := qString(q)
-	s.logger.Printf("Looking up %s, %d", key, q.Type)
-	val, ok := s.book.get(key)
+	value := qString(q)
+	s.logger.Printf("Looking up %s, type %d", value, q.Type)
+	val, ok := s.dnslookup.get(int8(q.Type), value)
 
 	if ok {
-		s.logger.Printf("Anwered lookup for %s", key)
+		s.logger.Printf("Anwered lookup for %s, type %d", value, q.Type)
 		p.message.Answers = append(p.message.Answers, val...)
 		go s.sendPacket(p.message, p.addr)
 	} else {
-		s.logger.Printf("Can't answer lookup for %s", key)
+		s.logger.Printf("Can't answer lookup for %s, type %d", value, q.Type)
 	}
 
 }
@@ -97,16 +96,18 @@ func (s *DNSService) sendPacket(message dnsmessage.Message, addr net.UDPAddr) {
 // New setups a DNSService
 func New(logger *log.Logger) DNSService {
 	return DNSService{
-		book:   store{data: make(map[string]entry), logger: logger},
+		dnslookup:   store{logger: logger},
 		logger: logger,
 	}
 }
 
-// Start conveniently init every parts of DNS service.
+// Start inits every part of DNS service.
 func Start(logger *log.Logger) *DNSService {
-	s := New(logger)
-	s.book.load()
-	s.Listen()
+	service := New(logger)
+	client := service.dnslookup.init()
+	defer client.Close()
 
-	return &s
+	service.Listen()
+
+	return &service
 }

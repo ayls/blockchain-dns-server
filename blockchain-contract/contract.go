@@ -53,7 +53,7 @@ func NewSession(ctx context.Context, keystorePath string, keystorePass string) (
 	// Create new transactor
 	keystore, err := os.Open(keystorePath)
 	if err != nil {
-		log.Printf(
+		log.Fatalf(
 			"could not load keystore from location %s: %v\n",
 			keystorePath,
 			err,
