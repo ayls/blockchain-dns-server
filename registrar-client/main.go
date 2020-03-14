@@ -19,7 +19,7 @@ import (
 var myenv map[string]string
 
 const (
-	envLoc = ".env"
+	envLoc = "../config/.env"
 	ErrTransactionWait = "If you've just started the application, wait a while for the network to confirm your transaction."
 )
 
@@ -115,7 +115,7 @@ func main() {
 }
 
 func NewSession(ctx context.Context) (session dnsrecord.DnsrecordSession) {
-	return contract.NewSession(ctx, myenv["KEYSTORE"], myenv["KEYSTOREPASS"])
+	return contract.NewSession(ctx, "../config/keystore/" + myenv["KEYSTOREFILE"], myenv["KEYSTOREPASS"])
 }
 
 func NewContract(session dnsrecord.DnsrecordSession, client *ethclient.Client) dnsrecord.DnsrecordSession {

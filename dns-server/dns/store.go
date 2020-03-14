@@ -23,8 +23,7 @@ type store struct {
 var myenv map[string]string
 
 const (
-	envLoc = ".env" // Define location of env file to load here.
-	// ErrTransactionWait should be returned/printed when we encounter an error that may be a result of the transaction not being confirmed yet.
+	envLoc = "../config/.env"	
 	ErrTransactionWait = "If you've just started the application, wait a while for the network to confirm your transaction."
 )
 
@@ -33,8 +32,6 @@ var (
 	errIPInvalid      = errors.New("Invalid IP address")
 )
 
-// loadEnv loads environment variables from location envLoc
-// Call this at the top of every function that uses environment variables.
 func (s *store) loadEnv() {
 	var err error
 	if myenv, err = godotenv.Read(envLoc); err != nil {
@@ -176,7 +173,7 @@ func (s *store) init() (*ethclient.Client) {
 }
 
 func (s *store) newSession(ctx context.Context) {
-	session := contract.NewSession(ctx, myenv["KEYSTORE"], myenv["KEYSTOREPASS"])
+	session := contract.NewSession(ctx, "../config/keystore/" + myenv["KEYSTOREFILE"], myenv["KEYSTOREPASS"])
 	s.session = session
 	s.logger.Println("Contract session created")
 }

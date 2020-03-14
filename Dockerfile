@@ -27,10 +27,6 @@ RUN rm $BINARY
 COPY *.sh ./
 COPY rinkeby.json .
 COPY --from=builder /app/registrar-client/registrar-client .
-# TODO:
-COPY --from=builder /app/registrar-client/.env .
-COPY --from=builder /app/registrar-client/keystore ./keystore
-# END TODO
 COPY --from=builder /app/dns-server/dns-server .
 
 ENV PATH="/app:${PATH}"

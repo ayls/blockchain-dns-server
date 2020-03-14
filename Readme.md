@@ -1,7 +1,8 @@
 
 docker build -t blockchain-dns-server .
 docker rm -f dns-test
-docker run -dit --dns=0.0.0.0 --name dns-test blockchain-dns-server
+docker run -dit --mount source="$(PWD)/config",target=/app/config,type=bind --dns=0.0.0.0 --name dns-test blockchain
+-dns-server
 docker exec -it dns-test bash
 
 
