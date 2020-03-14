@@ -20,13 +20,13 @@ var myenv map[string]string
 
 const (
 	envLoc = ".env"
-	ErrTransactionWait = "if you've just started the application, wait a while for the network to confirm your transaction."
+	ErrTransactionWait = "If you've just started the application, wait a while for the network to confirm your transaction."
 )
 
 func loadEnv() {
 	var err error
 	if myenv, err = godotenv.Read(envLoc); err != nil {
-		log.Printf("could not load env from %s: %v", envLoc, err)
+		log.Printf("Could not load env from %s: %v", envLoc, err)
 	}
 }
 
@@ -34,7 +34,7 @@ func updateEnvFile(k string, val string) {
 	myenv[k] = val
 	err := godotenv.Write(myenv, envLoc)
 	if err != nil {
-		log.Printf("failed to update %s: %v\n", envLoc, err)
+		log.Printf("Failed to update %s: %v\n", envLoc, err)
 	}
 }
 
@@ -47,7 +47,7 @@ func main() {
 	// Connect to Ethereum gateway
 	client, err := ethclient.Dial(myenv["GATEWAY"])
 	if err != nil {
-		log.Fatalf("could not connect to Ethereum gateway: %v\n", err)
+		log.Fatalf("Could not connect to Ethereum gateway: %v\n", err)
 	}
 	defer client.Close()
 
@@ -137,7 +137,7 @@ func readStringStdin() string {
 	reader := bufio.NewReader(os.Stdin)
 	inputVal, err := reader.ReadString('\n')
 	if err != nil {
-		log.Printf("invalid option: %v\n", err)
+		log.Printf("Invalid option: %v\n", err)
 		return ""
 	}
 
@@ -146,7 +146,7 @@ func readStringStdin() string {
 }
 
 // parse record type input
-func parseRecordType(recTypeString string) (int8, error) {
+func parseRecordType(recTypeString string) (uint16, error) {
 	switch recTypeString {
 	case "A":		
 		return 1, nil
@@ -172,11 +172,11 @@ func parseRecordType(recTypeString string) (int8, error) {
 }
 
 // setRecord sets a dns record
-func setRecord(session dnsrecord.DnsrecordSession, recType int8, recName string, recValue string) {
+func setRecord(session dnsrecord.DnsrecordSession, recType uint16, recName string, recValue string) {
 	// Send answer
 	txSendAnswer, err := session.AddRecord(recName, recType, recValue)
 	if err != nil {
-		log.Printf("could not set record in contract: %v\n", err)
+		log.Printf("Could not set record in contract: %v\n", err)
 		return
 	}
 	fmt.Printf("Record set! Please wait for tx %s to be confirmed.\n", txSendAnswer.Hash().Hex())
@@ -184,10 +184,10 @@ func setRecord(session dnsrecord.DnsrecordSession, recType int8, recName string,
 }
 
 // showRecord prints out a record.
-func showRecord(session dnsrecord.DnsrecordSession, recType int8, recName string) {
+func showRecord(session dnsrecord.DnsrecordSession, recType uint16, recName string) {
 	ip, err := session.GetRecord(recName, recType)
 	if err != nil {
-		log.Printf("could not read record from contract: %v\n", err)
+		log.Printf("Could not read record from contract: %v\n", err)
 		log.Println(ErrTransactionWait)
 		return
 	}

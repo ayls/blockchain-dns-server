@@ -14,7 +14,7 @@ func main() {
 	e, err := os.OpenFile("./log.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
-		fmt.Printf("error opening file: %v", err)
+		fmt.Printf("Error opening file: %v", err)
 		os.Exit(1)
 	}
 	logger = log.New(e, "", log.Ldate|log.Ltime)

@@ -66,18 +66,12 @@ func (s *DNSService) query(p Packet) {
 	q := p.message.Questions[0]
 
 	// answer the question
-	value := qString(q)
-	s.logger.Printf("Looking up %s, type %d", value, q.Type)
-	val, ok := s.dnslookup.get(int8(q.Type), value)
+	val, ok := s.dnslookup.get(q)
 
 	if ok {
-		s.logger.Printf("Anwered lookup for %s, type %d", value, q.Type)
 		p.message.Answers = append(p.message.Answers, val...)
 		go s.sendPacket(p.message, p.addr)
-	} else {
-		s.logger.Printf("Can't answer lookup for %s, type %d", value, q.Type)
 	}
-
 }
 
 func (s *DNSService) sendPacket(message dnsmessage.Message, addr net.UDPAddr) {
