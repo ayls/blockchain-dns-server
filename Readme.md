@@ -1,10 +1,13 @@
 
 docker build -t blockchain-dns-server .
 docker rm -f dns-test
-docker run -dit --mount source="$(PWD)/config",target=/app/config,type=bind --dns=0.0.0.0 --name dns-test blockchain
--dns-server
+docker run -dit --mount source="$(PWD)/config",target=/config,type=bind --dns=0.0.0.0 --name dns-test blockchain-dns-server
 docker exec -it dns-test bash
 
+
+docker-compose up -d
+docker exec -it blockchain-dns-server bash
+docker-compose down
 
 solc --abi --bin inet-dns-record.sol -o build
 abigen --abi="build/InetDnsRecord.abi" --bin="build/InetDnsRecord.bin" --pkg=dnsrecord --out="inet-dns-record.go"
