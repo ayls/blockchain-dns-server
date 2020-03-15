@@ -113,20 +113,6 @@ func (s *store) toResource(recType uint16, recName string, recValue string) (dns
 			return none, err
 		}
 		rBody = &dnsmessage.CNAMEResource{CNAME: cname}
-	case dnsmessage.TypeNS:
-		fallthrough
-	case dnsmessage.TypePTR:
-		fallthrough
-	case dnsmessage.TypeSOA:
-		fallthrough	
-	case dnsmessage.TypeMX:
-		fallthrough
-	case dnsmessage.TypeSRV:
-		fallthrough		
-	case dnsmessage.TypeTXT:
-		fallthrough
-	case dnsmessage.TypeOPT:
-		fallthrough		
 	default:
 		return none, errTypeNotSupported
 	}

@@ -150,24 +150,12 @@ func parseRecordType(recTypeString string) (uint16, error) {
 	switch recTypeString {
 	case "A":		
 		return 1, nil
-	case "NS":
-		return 2, nil
-	case "CNAME":
-		return 5, nil
-	case "SOA":
-		return 6, nil
-	case "PTR":
-		return 12, nil
-	case "MX":
-		return 15, nil
-	case "TXT":
-		return 16, nil
 	case "AAAA":
 		return 28, nil
-	case "SRV":
-		return 33, nil
+	case "CNAME":
+		return 5, nil
 	default:
-		return 0, errors.New("Unknown record type")		
+		return 0, errors.New("Unsupported record type")		
 	}
 }
 
