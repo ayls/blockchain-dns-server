@@ -8,5 +8,5 @@ build
 vendor
 keystore
 .env
-log.txt
+*.log
 .rinkeby

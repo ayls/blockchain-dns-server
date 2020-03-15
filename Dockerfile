@@ -24,8 +24,8 @@ RUN wget "https://gethstore.blob.core.windows.net/builds/$BINARY"
 RUN tar -xzvf $BINARY --strip 1
 RUN rm $BINARY
 
-COPY *.sh ./
 COPY rinkeby.json .
+COPY docker-entrypoint.sh .
 COPY --from=builder /app/registrar-client/registrar-client .
 COPY --from=builder /app/dns-server/dns-server .
 

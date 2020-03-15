@@ -10,8 +10,12 @@ import (
 
 var logger *log.Logger
 
+const (
+	logLoc = "./dns-server.log"
+)
+
 func main() {
-	e, err := os.OpenFile("./log.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	e, err := os.OpenFile(logLoc, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 
 	if err != nil {
 		fmt.Printf("Error opening file: %v", err)
@@ -19,7 +23,7 @@ func main() {
 	}
 	logger = log.New(e, "", log.Ldate|log.Ltime)
 	logger.SetOutput(&lumberjack.Logger{
-		Filename:   "./log.txt",
+		Filename:   logLoc,
 		MaxSize:    1,  // megabytes after which new file is created
 		MaxBackups: 3,  // number of backups
 		MaxAge:     28, //days
