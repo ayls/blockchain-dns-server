@@ -14,10 +14,10 @@ Supports A, AAAA and CNAME records.
 
 Run the following to install Ethereum tools:
 ```
-sudo apt-get install software-properties-common
-sudo add-apt-repository -y ppa:ethereum/ethereum
+sudo apt-get install software-properties-common -y 
+sudo add-apt-repository ppa:ethereum/ethereum -y
 sudo apt-get update
-sudo apt-get install ethereum
+sudo apt-get install ethereum -y
 sudo apt-get install solc
 ```
 
@@ -51,7 +51,8 @@ KEYSTOREPASS="<password>"
 
 Now you are ready to launch a light geth node client connected to rinkeby test network. Simply run this bash script from the root of the solution:
 ```
-./launch-geth-node.sh
+geth --nousb --datadir=$HOME/.rinkeby init rinkeby.json
+geth --nousb --networkid=4 --rpc --datadir=$HOME/.rinkeby --syncmode=light --bootnodes=enode://a24ac7c5484ef4ed0c5eb2d36620ba4e4aa13b8c84684e1b4aab0cebea2ae45cb4d375b77eab56516d34bfbd3c1a833fc51296ff084b770b94fb9028c4d25ccf@52.169.42.101:30303
 ```
 
 The node will take a few minutes to sync to latest blockchain state, once it does you are ready to test your setup.
@@ -89,7 +90,7 @@ docker-compose up -d
 docker exec -it blockchain-dns-server bash
 ```
 
-Give it a few minutes for the geth node running inside the container to sync to latest network state then you can add records by running __registrar-client__. To test things you could use commands like __dig__, __wget__. Keep in mind that the DNS Server only supports A, AAAA and CNET records so its usage is a bit limited.
+Give it a few minutes for the geth node running inside the container to sync to latest network state then you can add records by running __registrar-client__ and test with __dig__, __wget__ etc.
 
 ### A note on contract compilation
 

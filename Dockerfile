@@ -12,17 +12,17 @@ WORKDIR /app/dns-server
 RUN go build -o dns-server .
 
 # final image
-FROM golang:latest
+FROM ubuntu:latest
 
 RUN apt-get update
 RUN apt-get install dnsutils -y
-RUN apt-get install -y wget
+RUN apt-get install wget -y 
+RUN apt-get install software-properties-common -y 
+RUN add-apt-repository ppa:ethereum/ethereum -y
+RUN apt-get update
+RUN apt-get install ethereum -y
 
 WORKDIR /app
-ARG BINARY="geth-linux-amd64-1.9.11-6a62fe39.tar.gz"
-RUN wget "https://gethstore.blob.core.windows.net/builds/$BINARY"
-RUN tar -xzvf $BINARY --strip 1
-RUN rm $BINARY
 
 COPY rinkeby.json .
 COPY docker-entrypoint.sh .

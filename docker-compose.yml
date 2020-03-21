@@ -5,7 +5,7 @@ services:
   image: blockchain-dns-server
   dns: 0.0.0.0
   ports:
-   - "53:53"
+   - "53:53/udp"
   volumes:
    - type: bind
      source: ./config
