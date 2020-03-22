@@ -59,6 +59,10 @@ func (s *store) get(q dnsmessage.Question) ([]dnsmessage.Resource, bool) {
 		s.logger.Println(ErrTransactionWait)
 		return []dnsmessage.Resource{none}, false
 	}
+	if (recValue == "") {
+		s.logger.Printf("Record not set for %s, type %d\n", recName, recType)		
+		return []dnsmessage.Resource{none}, false		
+	}
 	resource, err := s.toResource(recType, recName, recValue)
 	if err != nil {
 		s.logger.Printf("Can't answer lookup for %s, type %d: %v\n", recName, recType, err)				
@@ -79,7 +83,7 @@ func toStringQuestion(q dnsmessage.Question) string {
 }
 
 func (s *store) toResource(recType uint16, recName string, recValue string) (dnsmessage.Resource, error) {
-	s.logger.Printf("Converting to resource (name %s, type %d, value: %s\n", recName, recType, recValue)					
+	s.logger.Printf("Converting to resource (name %s, type %d, value: %s)\n", recName, recType, recValue)					
 	rName, err := dnsmessage.NewName(recName)
 	none := dnsmessage.Resource{}
 	if err != nil {

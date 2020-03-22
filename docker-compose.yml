@@ -1,12 +1,12 @@
 version: "3.7"
 services:
- blockchain-dns-server:
-  container_name: blockchain-dns-server
-  image: blockchain-dns-server
-  dns: 0.0.0.0
-  ports:
-   - "53:53/udp"
-  volumes:
-   - type: bind
-     source: ./config
-     target: /config
+  blockchain-dns-server:
+    container_name: blockchain-dns-server
+    image: blockchain-dns-server
+    dns: 0.0.0.0
+    ports:
+      - "53:53/udp"
+    volumes:
+      - type: bind
+        source: ./config
+        target: /config
